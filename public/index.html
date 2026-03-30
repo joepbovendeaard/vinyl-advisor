@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-title" content="Vinyl">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <title>Vinyl Advisor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; color: inherit; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #333;
+      --accent: #c8a96e;
+      --accent2: #e8c98e;
+      --text: #f0f0f0;
+      --muted: #888;
+      --green: #4caf7d;
+      --yellow: #f0c040;
+      --red: #e05555;
+      --radius: 14px;
+    }
+
+    body {
+      background: var(--bg) !important;
+      color: var(--text) !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+      min-height: 100vh;
+      padding-bottom: 40px;
+      -webkit-text-fill-color: var(--text);
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header .logo { font-size: 28px; }
+    header h1 { font-size: 20px; font-weight: 700; color: var(--accent); }
+    header .sub { font-size: 12px; color: var(--muted); }
+
+    .container { padding: 20px 16px; max-width: 600px; margin: 0 auto; }
+
+    /* Upload sectie */
+    .upload-section {
+      background: var(--surface);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 24px 16px;
+      text-align: center;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .upload-section.has-photos { border-color: var(--accent); border-style: solid; }
+
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #0d0d0d;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .upload-btn.secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    input[type="file"] { display: none; }
+
+    .photo-previews {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+    .photo-preview {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+    .photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid var(--accent);
+    }
+    .photo-preview .remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Vraagprijs */
+    .asking-price-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    .asking-price-row label { color: var(--muted); font-size: 14px; flex-shrink: 0; }
+    .asking-price-row .euro { color: var(--accent); font-size: 18px; font-weight: 700; }
+    .asking-price-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+      text-align: right;
+    }
+    .asking-price-row input::placeholder { color: var(--muted); font-weight: 400; }
+
+    /* Analyseer knop */
+    .analyze-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0d0d0d;
+      border: none;
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      transition: opacity 0.2s;
+    }
+    .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Loading */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p { color: var(--muted); font-size: 14px; }
+
+    /* Resultaten */
+    .results { display: none; }
+
+    /* Prijs verdict banner */
+    .verdict-banner {
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      -webkit-text-fill-color: var(--text);
+    }
+    .verdict-banner .verdict-title { font-size: 22px; margin-bottom: 6px; }
+    .verdict-banner .verdict-advice { font-size: 14px; font-weight: 400; opacity: 0.9; line-height: 1.4; }
+    .verdict-banner.green { background: rgba(76, 175, 125, 0.2); border: 1px solid var(--green); }
+    .verdict-banner.yellow { background: rgba(240, 192, 64, 0.15); border: 1px solid var(--yellow); }
+    .verdict-banner.red { background: rgba(224, 85, 85, 0.15); border: 1px solid var(--red); }
+    .verdict-banner.neutral { background: var(--surface); border: 1px solid var(--border); }
+
+    /* Plaat info card */
+    .record-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 14px;
+    }
+    .record-thumb {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--surface2);
+    }
+    .record-thumb-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+    .record-info h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; color: var(--text); -webkit-text-fill-color: var(--text); }
+    .record-info .artist { color: var(--accent); font-size: 15px; margin-bottom: 8px; }
+    .record-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      background: var(--surface2);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .tag span { color: var(--text); }
+
+    /* Prijs stats */
+    .price-stats {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      text-align: center;
+    }
+    .price-stat .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .price-stat .value { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .price-stat .value.max { color: var(--green); }
+
+    /* Community stats */
+    .community-stats {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-around;
+    }
+    .community-stat { text-align: center; }
+    .community-stat .label { font-size: 11px; color: var(--muted); }
+    .community-stat .value { font-size: 18px; font-weight: 700; }
+
+    /* Actie knoppen */
+    .action-section { margin-bottom: 16px; }
+    .action-section h3 { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+    .action-btn {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .action-btn:active { transform: scale(0.98); }
+    .action-btn .icon { font-size: 22px; }
+    .action-btn .btn-text { flex: 1; text-align: left; }
+    .action-btn .btn-sub { font-size: 12px; font-weight: 400; opacity: 0.7; }
+    .action-btn.collection { background: rgba(76, 175, 125, 0.2); color: var(--green); border: 1px solid rgba(76, 175, 125, 0.4); }
+    .action-btn.excel { background: rgba(33, 150, 243, 0.15); color: #64b5f6; border: 1px solid rgba(33, 150, 243, 0.3); }
+    .action-btn.wantlist { background: rgba(255, 152, 0, 0.15); color: #ffb74d; border: 1px solid rgba(255, 152, 0, 0.3); }
+    .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .action-btn.done { opacity: 0.6; }
+    .action-btn .status-icon { margin-left: auto; font-size: 18px; }
+
+    /* Release selector */
+    .release-selector {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .release-selector h3 { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+    .release-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      margin-bottom: 8px;
+      background: var(--surface2);
+      transition: border-color 0.2s;
+    }
+    .release-item.selected { border-color: var(--accent); }
+    .release-item img { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; background: var(--border); }
+    .release-item .release-info { flex: 1; min-width: 0; }
+    .release-item .release-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .release-item .release-meta { font-size: 12px; color: var(--muted); }
+    .release-item .release-price { font-size: 14px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+
+    /* Reset knop */
+    .reset-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* Duplicate modal */
+    #dupModal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      display: none; align-items: center; justify-content: center;
+      z-index: 500; padding: 20px;
+    }
+    #dupModal.open { display: flex; }
+    .dup-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; max-width: 320px; width: 100%;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .dup-box h3 { color: var(--accent); font-size: 17px; }
+    .dup-box p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .dup-actions { display: flex; flex-direction: column; gap: 10px; }
+    .dup-btn {
+      padding: 14px; border-radius: 10px; border: none;
+      font-size: 15px; cursor: pointer; font-weight: 600;
+    }
+    .dup-btn.replace { background: var(--accent); color: #000; }
+    .dup-btn.again   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .dup-btn.cancel  { background: transparent; color: var(--muted); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--surface2);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: var(--green); color: var(--green); }
+    .toast.error { border-color: var(--red); color: var(--red); }
+
+    /* Discogs link */
+    .discogs-link {
+      display: block;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      text-decoration: none;
+      padding: 8px;
+      margin-bottom: 16px;
+    }
+    .discogs-link:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+<style>
+  #pinScreen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 999; gap: 24px;
+  }
+  #pinScreen h2 { color: var(--accent); font-size: 22px; }
+  #pinScreen .pin-dots { display: flex; gap: 16px; }
+  #pinScreen .pin-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--border); transition: background 0.15s;
+  }
+  #pinScreen .pin-dot.filled { background: var(--accent); }
+  #pinScreen .pin-grid {
+    display: grid; grid-template-columns: repeat(3, 72px); gap: 12px;
+  }
+  #pinScreen .pin-btn {
+    height: 72px; border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-size: 24px; cursor: pointer;
+  }
+  #pinScreen .pin-btn:active { background: var(--surface2); }
+  #pinScreen .pin-error { color: var(--red); font-size: 14px; min-height: 20px; }
+</style>
+
+<div id="pinScreen">
+  <h2>🎵 Vinyl Advisor</h2>
+  <div class="pin-dots">
+    <div class="pin-dot" id="dot0"></div>
+    <div class="pin-dot" id="dot1"></div>
+    <div class="pin-dot" id="dot2"></div>
+    <div class="pin-dot" id="dot3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-btn" onclick="pinKey('1')">1</button>
+    <button class="pin-btn" onclick="pinKey('2')">2</button>
+    <button class="pin-btn" onclick="pinKey('3')">3</button>
+    <button class="pin-btn" onclick="pinKey('4')">4</button>
+    <button class="pin-btn" onclick="pinKey('5')">5</button>
+    <button class="pin-btn" onclick="pinKey('6')">6</button>
+    <button class="pin-btn" onclick="pinKey('7')">7</button>
+    <button class="pin-btn" onclick="pinKey('8')">8</button>
+    <button class="pin-btn" onclick="pinKey('9')">9</button>
+    <button class="pin-btn" onclick="pinKey('')" style="font-size:16px">✕</button>
+    <button class="pin-btn" onclick="pinKey('0')">0</button>
+    <button class="pin-btn" onclick="pinBackspace()" style="font-size:18px">⌫</button>
+  </div>
+  <div class="pin-error" id="pinError"></div>
+</div>
+
+<header>
+  <div class="logo">🎵</div>
+  <div style="flex:1">
+    <h1>Vinyl Advisor</h1>
+    <div class="sub">Foto → Discogs → Advies</div>
+  </div>
+  <button id="headerResetBtn" onclick="reset()" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer">↩ Nieuw</button>
+</header>
+
+<div class="container">
+
+  <!-- Upload sectie -->
+  <div class="upload-section" id="uploadSection">
+    <input type="file" id="photoInput" accept="image/*" multiple>
+    <button class="upload-btn" onclick="document.getElementById('photoInput').click()">
+      🖼️ Kies foto uit bibliotheek
+    </button>
+    <div style="font-size:12px;color:var(--muted);margin-top:6px">Maak eerst een foto met je Camera-app, kies hem dan hier</div>
+    <div class="photo-previews" id="photoPreviews"></div>
+  </div>
+
+  <!-- Vraagprijs -->
+  <div class="asking-price-row">
+    <label>Vraagprijs</label>
+    <span class="euro">€</span>
+    <input type="number" id="askingPrice" placeholder="laat leeg als onbekend" step="0.50" min="0">
+  </div>
+
+  <!-- Analyseer -->
+  <button class="analyze-btn" id="analyzeBtn" onclick="analyze()" disabled>
+    🔍 Analyseer plaat
+  </button>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p id="loadingText">Foto's analyseren...</p>
+  </div>
+
+  <!-- Resultaten -->
+  <div class="results" id="results">
+
+    <!-- Verdict banner -->
+    <div class="verdict-banner" id="verdictBanner">
+      <div class="verdict-title" id="verdictTitle"></div>
+      <div class="verdict-advice" id="verdictAdvice"></div>
+    </div>
+
+    <!-- Plaat info -->
+    <div class="record-card" id="recordCard"></div>
+
+    <!-- Prijs stats -->
+    <div class="price-stats" id="priceStats"></div>
+
+    <!-- Community -->
+    <div class="community-stats" id="communityStats"></div>
+
+    <!-- Release selector -->
+    <div class="release-selector" id="releaseSelector" style="display:none">
+      <h3>Andere versies op Discogs</h3>
+      <div id="releaseList"></div>
+    </div>
+
+    <!-- Discogs link -->
+    <a id="discogsLink" class="discogs-link" target="_blank" style="display:none">
+      🔗 Bekijk op Discogs →
+    </a>
+
+    <!-- Actie knoppen -->
+    <div class="action-section">
+      <h3>Acties</h3>
+      <button class="action-btn collection" id="btnCollection" onclick="addToCollection()">
+        <span class="icon">💿</span>
+        <div class="btn-text">
+          Collectie<br>
+          <span class="btn-sub">Toevoegen aan Discogs collectie</span>
+        </div>
+        <span class="status-icon" id="statusCollection"></span>
+      </button>
+      <button class="action-btn excel" id="btnExcel" onclick="addToExcel()">
+        <span class="icon">📊</span>
+        <div class="btn-text">
+          Excel<br>
+          <span class="btn-sub">Toevoegen aan Jazz_Vinyl_Collectie.xlsx</span>
+        </div>
+        <span class="status-icon" id="statusExcel"></span>
+      </button>
+      <button class="action-btn wantlist" id="btnWantlist" onclick="addToWantlist()">
+        <span class="icon">⭐</span>
+        <div class="btn-text">
+          Wantlist<br>
+          <span class="btn-sub">Toevoegen aan Discogs wantlist</span>
+        </div>
+        <span class="status-icon" id="statusWantlist"></span>
+      </button>
+    </div>
+
+    <!-- Reset -->
+    <button class="reset-btn" onclick="reset()">↩ Nieuwe plaat analyseren</button>
+
+  </div>
+</div>
+
+<!-- Duplicate modal -->
+<div id="dupModal">
+  <div class="dup-box">
+    <h3 id="dupTitle"></h3>
+    <p id="dupText"></p>
+    <div class="dup-actions">
+      <button class="dup-btn replace" id="dupReplace">♻️ Vervangen</button>
+      <button class="dup-btn again"   id="dupAgain">➕ Nog een keer toevoegen</button>
+      <button class="dup-btn cancel"  onclick="closeDupModal()">Annuleren</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // PIN
+  let pinValue = '';
+  if (sessionStorage.getItem('vinyl_auth') === '1') {
+    document.getElementById('pinScreen').style.display = 'none';
+  }
+  function pinKey(digit) {
+    if (digit === '') { pinValue = ''; updateDots(); return; }
+    if (pinValue.length >= 4) return;
+    pinValue += digit;
+    updateDots();
+    if (pinValue.length === 4) checkPin();
+  }
+  function pinBackspace() {
+    pinValue = pinValue.slice(0, -1);
+    updateDots();
+  }
+  function updateDots() {
+    for (let i = 0; i < 4; i++) {
+      document.getElementById('dot' + i).classList.toggle('filled', i < pinValue.length);
+    }
+  }
+  async function checkPin() {
+    const res = await fetch('/check-pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: pinValue })
+    });
+    if (res.ok) {
+      sessionStorage.setItem('vinyl_auth', '1');
+      document.getElementById('pinScreen').style.display = 'none';
+    } else {
+      document.getElementById('pinError').textContent = 'Verkeerde pincode';
+      pinValue = '';
+      updateDots();
+      setTimeout(() => document.getElementById('pinError').textContent = '', 1500);
+    }
+  }
+
+  // State
+  let state = {
+    photos: [],
+    result: null,
+    selectedRelease: null
+  };
+
+  // Comprimeer foto naar max 1600px / 1MB
+  function compressImage(file) {
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const MAX = 1600;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', 0.85);
+      };
+      img.src = url;
+    });
+  }
+
+  // Photo input handler
+  document.getElementById('photoInput').addEventListener('change', async function(e) {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      if (state.photos.length >= 2) break;
+      const compressed = await compressImage(file);
+      state.photos.push(compressed);
+    }
+    renderPreviews();
+    updateAnalyzeBtn();
+    this.value = '';
+  });
+
+  function renderPreviews() {
+    const container = document.getElementById('photoPreviews');
+    const section = document.getElementById('uploadSection');
+    container.innerHTML = '';
+
+    state.photos.forEach((file, i) => {
+      const url = URL.createObjectURL(file);
+      const div = document.createElement('div');
+      div.className = 'photo-preview';
+      div.innerHTML = `
+        <img src="${url}" alt="foto ${i+1}">
+        <button class="remove" onclick="removePhoto(${i})">×</button>
+      `;
+      container.appendChild(div);
+    });
+
+    section.classList.toggle('has-photos', state.photos.length > 0);
+
+    // Tweede foto knop tonen
+    const btn = document.querySelector('.upload-btn');
+    if (state.photos.length === 1) {
+      btn.textContent = '🖼️ + Tweede foto (label)';
+    } else if (state.photos.length === 0) {
+      btn.innerHTML = '📷 Foto maken of kiezen';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
+  function removePhoto(index) {
+    state.photos.splice(index, 1);
+    renderPreviews();
+    updateAnalyzeBtn();
+    document.querySelector('.upload-btn').style.display = '';
+  }
+
+  function updateAnalyzeBtn() {
+    document.getElementById('analyzeBtn').disabled = state.photos.length === 0;
+  }
+
+  async function analyze() {
+    if (state.photos.length === 0) return;
+
+    // UI: loading
+    document.getElementById('analyzeBtn').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+
+    const steps = ['Foto\'s analyseren...', 'Plaat herkennen met AI...', 'Discogs doorzoeken...', 'Prijzen ophalen...'];
+    let stepIndex = 0;
+    const stepInterval = setInterval(() => {
+      if (stepIndex < steps.length - 1) stepIndex++;
+      document.getElementById('loadingText').textContent = steps[stepIndex];
+    }, 2000);
+
+    try {
+      const formData = new FormData();
+      state.photos.forEach(photo => formData.append('photos', photo));
+      const askingPrice = document.getElementById('askingPrice').value;
+      if (askingPrice) formData.append('asking_price', askingPrice);
+
+      const response = await fetch('/analyze', { method: 'POST', body: formData });
+      const data = await response.json();
+
+      clearInterval(stepInterval);
+
+      if (!response.ok) throw new Error(data.error || 'Analyse mislukt');
+
+      state.result = data;
+      state.selectedRelease = data.best_match;
+      try {
+        renderResults(data);
+      } catch(renderErr) {
+        alert('Render fout: ' + renderErr.message);
+      }
+
+    } catch (err) {
+      clearInterval(stepInterval);
+      showToast('❌ ' + err.message, 'error');
+      document.getElementById('analyzeBtn').style.display = '';
+    } finally {
+      document.getElementById('loading').style.display = 'none';
+    }
+  }
+
+  function renderResults(data) {
+    const { record, best_match, all_releases, price_advice } = data;
+
+    // Verdict banner
+    const banner = document.getElementById('verdictBanner');
+    const verdictText = price_advice.verdict || '';
+    banner.className = 'verdict-banner ' + getVerdictClass(verdictText);
+    document.getElementById('verdictTitle').textContent = verdictText;
+    document.getElementById('verdictAdvice').textContent = price_advice.advice || '';
+
+    // Record card
+    const card = document.getElementById('recordCard');
+    const thumb = best_match?.thumb;
+    card.innerHTML = `
+      ${thumb
+        ? `<img class="record-thumb" src="${thumb}" alt="hoes">`
+        : `<div class="record-thumb-placeholder">🎵</div>`
+      }
+      <div class="record-info">
+        <div class="artist">${record.artist || 'Onbekend'}</div>
+        <h2>${record.title || 'Onbekend album'}</h2>
+        <div class="record-meta">
+          ${record.year ? `<div class="tag"><span>${record.year}</span></div>` : ''}
+          ${record.country ? `<div class="tag"><span>${record.country}</span></div>` : ''}
+          ${record.label ? `<div class="tag">${record.label}</div>` : ''}
+          ${record.catalog_number ? `<div class="tag"><span>${record.catalog_number}</span></div>` : ''}
+          ${record.format ? `<div class="tag"><span>${record.format}</span></div>` : ''}
+        </div>
+        ${record.notes ? `<div style="margin-top:8px;font-size:12px;color:var(--accent)">${record.notes}</div>` : ''}
+      </div>
+    `;
+
+    // Prijs stats
+    const statsEl = document.getElementById('priceStats');
+    if (price_advice.median_price) {
+      statsEl.style.display = '';
+      statsEl.innerHTML = `
+        <div class="price-stat">
+          <div class="label">Laagste</div>
+          <div class="value">€${price_advice.lowest_price?.toFixed(2) || '—'}</div>
+        </div>
+        <div class="price-stat">
+          <div class="label">Mediaan</div>
+          <div class="value">€${price_advice.median_price?.toFixed(2) || '—'}</div>
+        </div>
+        <div class="price-stat">
+          <div class="label">Max betalen</div>
+          <div class="value max">€${price_advice.max_pay?.toFixed(2) || '—'}</div>
+        </div>
+      `;
+    } else {
+      statsEl.style.display = 'none';
+    }
+
+    // Community stats
+    const commEl = document.getElementById('communityStats');
+    if (best_match?.want || best_match?.have) {
+      commEl.style.display = '';
+      commEl.innerHTML = `
+        <div class="community-stat">
+          <div class="label">Te koop</div>
+          <div class="value">${price_advice.num_for_sale ?? '—'}</div>
+        </div>
+        <div class="community-stat">
+          <div class="label">Willen</div>
+          <div class="value">${best_match.want ?? '—'}</div>
+        </div>
+        <div class="community-stat">
+          <div class="label">Hebben</div>
+          <div class="value">${best_match.have ?? '—'}</div>
+        </div>
+      `;
+    } else {
+      commEl.style.display = 'none';
+    }
+
+    // Release selector (als er meerdere zijn)
+    if (all_releases && all_releases.length > 1) {
+      document.getElementById('releaseSelector').style.display = '';
+      const list = document.getElementById('releaseList');
+      list.innerHTML = all_releases.map((r, i) => `
+        <div class="release-item ${i === 0 ? 'selected' : ''}" onclick="selectRelease(${i})" data-index="${i}">
+          <img src="${r.thumb || ''}" onerror="this.style.display='none'" alt="">
+          <div class="release-info">
+            <div class="release-title">${r.title || r.catno || '—'}</div>
+            <div class="release-meta">${[r.country, r.year, r.catno].filter(Boolean).join(' · ')}</div>
+          </div>
+          ${r.median_price ? `<div class="release-price">€${r.median_price.toFixed(2)}</div>` : ''}
+        </div>
+      `).join('');
+    } else {
+      document.getElementById('releaseSelector').style.display = 'none';
+    }
+
+    // Discogs link
+    if (best_match?.uri) {
+      const link = document.getElementById('discogsLink');
+      link.href = best_match.uri;
+      link.style.display = '';
+    }
+
+    // Reset actie knoppen
+    ['Collection', 'Excel', 'Wantlist'].forEach(name => {
+      const btn = document.getElementById(`btn${name}`);
+      btn.disabled = false;
+      btn.classList.remove('done');
+      document.getElementById(`status${name}`).textContent = '';
+    });
+
+    document.getElementById('results').style.display = 'block';
+    document.querySelector('.upload-section').style.display = 'none';
+    document.querySelector('.asking-price-row').style.display = 'none';
+    document.getElementById('analyzeBtn').style.display = 'none';
+    document.getElementById('headerResetBtn').style.display = '';
+  }
+
+  function getVerdictClass(verdict) {
+    if (verdict.includes('🟢')) return 'green';
+    if (verdict.includes('🟡')) return 'yellow';
+    if (verdict.includes('🔴')) return 'red';
+    return 'neutral';
+  }
+
+  function selectRelease(index) {
+    const releases = state.result.all_releases;
+    state.selectedRelease = releases[index];
+
+    document.querySelectorAll('.release-item').forEach((el, i) => {
+      el.classList.toggle('selected', i === index);
+    });
+  }
+
+  // Duplicate modal helpers
+  let dupResolve = null;
+  function closeDupModal() {
+    document.getElementById('dupModal').classList.remove('open');
+    if (dupResolve) { dupResolve('cancel'); dupResolve = null; }
+  }
+  function showDupModal(title, text, showReplace) {
+    document.getElementById('dupTitle').textContent = title;
+    document.getElementById('dupText').textContent = text;
+    document.getElementById('dupReplace').style.display = showReplace ? '' : 'none';
+    document.getElementById('dupModal').classList.add('open');
+    return new Promise(resolve => {
+      dupResolve = resolve;
+      document.getElementById('dupReplace').onclick = () => {
+        document.getElementById('dupModal').classList.remove('open');
+        resolve('replace'); dupResolve = null;
+      };
+      document.getElementById('dupAgain').onclick = () => {
+        document.getElementById('dupModal').classList.remove('open');
+        resolve('again'); dupResolve = null;
+      };
+    });
+  }
+
+  async function addToCollection() {
+    const releaseId = state.selectedRelease?.id;
+    const checkRes = await fetch('/check-collection', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ release_id: releaseId })
+    }).then(r => r.json());
+
+    if (checkRes.exists) {
+      const choice = await showDupModal(
+        '⚠️ Al in je collectie',
+        `Deze plaat staat al ${checkRes.count}x in je Discogs collectie. Wat wil je doen?`,
+        false
+      );
+      if (choice === 'cancel') return;
+    }
+
+    await doAction('collection', 'btnCollection', 'statusCollection',
+      () => fetch('/add-collection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ release_id: releaseId })
+      })
+    );
+  }
+
+  async function addToWantlist() {
+    const releaseId = state.selectedRelease?.id;
+    const checkRes = await fetch('/check-wantlist', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ release_id: releaseId })
+    }).then(r => r.json());
+
+    if (checkRes.exists) {
+      const choice = await showDupModal(
+        '⚠️ Al op je wantlist',
+        'Deze plaat staat al op je Discogs wantlist. Wil je hem toch nog een keer toevoegen?',
+        false
+      );
+      if (choice === 'cancel') return;
+    }
+
+    await doAction('wantlist', 'btnWantlist', 'statusWantlist',
+      () => fetch('/add-wantlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ release_id: releaseId })
+      })
+    );
+  }
+
+  async function addToExcel() {
+    const { record, price_advice } = state.result;
+    const checkRes = await fetch('/check-numbers', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ artist: record.artist, title: record.title })
+    }).then(r => r.json());
+
+    let action = 'add';
+    if (checkRes.exists) {
+      const choice = await showDupModal(
+        '⚠️ Al in je Numbers collectie',
+        `"${record.artist} — ${record.title}" staat al in je bestand. Wil je de bestaande rij vervangen of een tweede keer toevoegen?`,
+        true
+      );
+      if (choice === 'cancel') return;
+      if (choice === 'replace') action = `replace:${checkRes.row}`;
+      if (choice === 'again') action = 'duplicate';
+    }
+
+    await doAction('excel', 'btnExcel', 'statusExcel',
+      () => fetch('/add-excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          record,
+          best_match: state.selectedRelease,
+          price_advice,
+          action
+        })
+      })
+    );
+  }
+
+  async function doAction(name, btnId, statusId, fetchFn) {
+    const btn = document.getElementById(btnId);
+    const statusEl = document.getElementById(statusId);
+    btn.disabled = true;
+    statusEl.textContent = '⏳';
+
+    try {
+      const response = await fetchFn();
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Actie mislukt');
+
+      statusEl.textContent = '✅';
+      btn.classList.add('done');
+      showToast(data.message || '✅ Gelukt!', 'success');
+    } catch (err) {
+      statusEl.textContent = '❌';
+      btn.disabled = false;
+      showToast('❌ ' + err.message, 'error');
+    }
+  }
+
+  function reset() {
+    state = { photos: [], result: null, selectedRelease: null };
+    document.getElementById('results').style.display = 'none';
+    document.querySelector('.upload-section').style.display = '';
+    document.querySelector('.asking-price-row').style.display = '';
+    document.getElementById('analyzeBtn').style.display = '';
+    document.getElementById('askingPrice').value = '';
+    document.getElementById('photoPreviews').innerHTML = '';
+    document.getElementById('uploadSection').classList.remove('has-photos');
+    document.querySelector('.upload-btn').innerHTML = '🖼️ Kies foto uit bibliotheek';
+    document.querySelector('.upload-btn').style.display = '';
+    document.getElementById('headerResetBtn').style.display = 'none';
+    updateAnalyzeBtn();
+  }
+
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type;
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+
+  // Service Worker registreren
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
