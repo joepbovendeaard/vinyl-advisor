@@ -465,7 +465,14 @@
   <button id="headerResetBtn" onclick="reset()" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer">↩ Nieuw</button>
 </header>
 
-<div class="container">
+<!-- Tab navigatie -->
+<div style="display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:9">
+  <button class="tab-btn active" id="tabAnalyze" onclick="switchTab('analyze')" style="flex:1;padding:12px;border:none;background:none;color:var(--accent);font-weight:700;font-size:14px;cursor:pointer;border-bottom:2px solid var(--accent)">📸 Analyzer</button>
+  <button class="tab-btn" id="tabDeelder" onclick="switchTab('deelder')" style="flex:1;padding:12px;border:none;background:none;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;border-bottom:2px solid transparent">🎷 Deelder</button>
+</div>
+
+<!-- ANALYZER SCREEN -->
+<div id="screenAnalyze" class="container">
 
   <!-- Upload sectie -->
   <div class="upload-section" id="uploadSection">
@@ -573,6 +580,19 @@
 
   </div>
 </div>
+<!-- END ANALYZER SCREEN -->
+
+<!-- DEELDER SCREEN -->
+<div id="screenDeelder" style="display:none">
+  <!-- Alphabet sidebar -->
+  <div id="alphaBar" style="position:fixed;right:4px;top:120px;z-index:20;display:flex;flex-direction:column;align-items:center;gap:0">
+  </div>
+  <div style="padding:16px;max-width:600px;margin:0 auto">
+    <div style="margin-bottom:12px;color:var(--muted);font-size:13px">49 platen uit de collectie van Jules Deelder — tik voor details</div>
+    <div id="deelderListContainer"></div>
+  </div>
+</div>
+<!-- END DEELDER SCREEN -->
 
 <!-- Duplicate modal -->
 <div id="dupModal">
@@ -1121,6 +1141,67 @@
     document.getElementById('deelderPersing').innerHTML = '💿 ' + match.aanbevolenPersing;
     document.getElementById('deelderVermijd').innerHTML = match.vermijd !== 'N.v.t.' && match.vermijd !== 'Niet nodig.' && !match.vermijd.startsWith('Geen') ? '⚠️ ' + match.vermijd : '';
     document.getElementById('deelderCheck').innerHTML = match.checkOp !== 'N.v.t.' ? '🔍 ' + match.checkOp : '';
+  }
+
+  // === TAB SWITCHING ===
+  function switchTab(tab) {
+    document.getElementById('screenAnalyze').style.display = tab === 'analyze' ? '' : 'none';
+    document.getElementById('screenDeelder').style.display = tab === 'deelder' ? '' : 'none';
+    document.getElementById('tabAnalyze').style.color = tab === 'analyze' ? 'var(--accent)' : 'var(--muted)';
+    document.getElementById('tabAnalyze').style.borderBottomColor = tab === 'analyze' ? 'var(--accent)' : 'transparent';
+    document.getElementById('tabAnalyze').style.fontWeight = tab === 'analyze' ? '700' : '600';
+    document.getElementById('tabDeelder').style.color = tab === 'deelder' ? 'var(--accent)' : 'var(--muted)';
+    document.getElementById('tabDeelder').style.borderBottomColor = tab === 'deelder' ? 'var(--accent)' : 'transparent';
+    document.getElementById('tabDeelder').style.fontWeight = tab === 'deelder' ? '700' : '600';
+    if (tab === 'deelder') renderDeelderList();
+  }
+
+  // === DEELDER LIST RENDERING ===
+  let deelderRendered = false;
+  function renderDeelderList() {
+    if (deelderRendered) return;
+    deelderRendered = true;
+    const sorted = [...DEELDER_LIST].sort((a, b) => a.artist.localeCompare(b.artist));
+    const container = document.getElementById('deelderListContainer');
+    const letters = [...new Set(sorted.map(d => d.artist[0].toUpperCase()))];
+
+    // Alphabet bar
+    const alphaBar = document.getElementById('alphaBar');
+    alphaBar.innerHTML = letters.map(l =>
+      `<a href="#dl-${l}" style="color:var(--accent);font-size:10px;padding:1px 4px;text-decoration:none;font-weight:700">${l}</a>`
+    ).join('');
+
+    let html = '';
+    let currentLetter = '';
+    sorted.forEach(d => {
+      const letter = d.artist[0].toUpperCase();
+      if (letter !== currentLetter) {
+        currentLetter = letter;
+        html += `<div id="dl-${letter}" style="color:var(--accent);font-size:13px;font-weight:700;padding:12px 0 4px;border-bottom:1px solid var(--border)">${letter}</div>`;
+      }
+      html += `
+        <div class="deelder-item" onclick="this.querySelector('.deelder-detail').style.display=this.querySelector('.deelder-detail').style.display==='none'?'':'none'" style="padding:12px 0;border-bottom:1px solid var(--surface2);cursor:pointer">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:600;font-size:15px">${d.artist}</div>
+              <div style="color:var(--muted);font-size:13px">${d.album} <span style="color:var(--accent);font-size:11px">${d.prijsIndicatie}</span></div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);text-align:right">
+              ${d.vindbaarheid}<br>
+              <span style="font-size:10px">${d.year}</span>
+            </div>
+          </div>
+          <div class="deelder-detail" style="display:none;margin-top:10px;padding:10px;background:var(--surface);border-radius:10px;font-size:13px">
+            <div style="color:var(--accent);font-weight:600;margin-bottom:6px">📀 ${d.deelderCd}</div>
+            <div style="margin-bottom:6px">${d.opmerking}</div>
+            <div style="color:var(--muted);margin-bottom:4px">💿 ${d.aanbevolenPersing}</div>
+            ${d.vermijd !== 'N.v.t.' && d.vermijd !== 'Niet nodig.' && !d.vermijd.startsWith('Geen') ? `<div style="color:var(--red);margin-bottom:4px">⚠️ ${d.vermijd}</div>` : ''}
+            ${d.checkOp !== 'N.v.t.' ? `<div style="color:var(--green)">🔍 ${d.checkOp}</div>` : ''}
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
   }
 </script>
 </body>
