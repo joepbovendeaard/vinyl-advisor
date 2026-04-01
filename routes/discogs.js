@@ -25,7 +25,8 @@ exports.searchThumb = async (req, res) => {
       params: { q, type: 'release', format: 'vinyl', per_page: 1 }
     });
     const results = response.data.results || [];
-    res.json({ thumb: results[0]?.thumb || null });
+    const r = results[0];
+    res.json({ thumb: r?.cover_image || r?.thumb || null });
   } catch (err) {
     res.json({ thumb: null });
   }
