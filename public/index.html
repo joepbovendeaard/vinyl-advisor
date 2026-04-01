@@ -1196,7 +1196,8 @@
             <div style="margin-bottom:6px">${d.opmerking}</div>
             <div style="color:var(--muted);margin-bottom:4px">💿 ${d.aanbevolenPersing}</div>
             ${d.vermijd !== 'N.v.t.' && d.vermijd !== 'Niet nodig.' && !d.vermijd.startsWith('Geen') ? `<div style="color:var(--red);margin-bottom:4px">⚠️ ${d.vermijd}</div>` : ''}
-            ${d.checkOp !== 'N.v.t.' ? `<div style="color:var(--green)">🔍 ${d.checkOp}</div>` : ''}
+            ${d.checkOp !== 'N.v.t.' ? `<div style="color:var(--green);margin-bottom:6px">🔍 ${d.checkOp}</div>` : ''}
+            <a href="https://open.spotify.com/search/${encodeURIComponent(d.artist + ' ' + d.album)}" target="_blank" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:6px;background:#1DB954;color:#000;font-weight:700;font-size:13px;padding:8px 14px;border-radius:20px;text-decoration:none;margin-top:4px">▶ Beluister op Spotify</a>
           </div>
         </div>
       `;
