@@ -14,6 +14,23 @@ async function getUsername() {
   return response.data.username;
 }
 
+// POST /search-thumb — zoek thumbnail voor artiest+album
+exports.searchThumb = async (req, res) => {
+  try {
+    const { artist, album } = req.body;
+    if (!artist) return res.json({ thumb: null });
+    const q = [artist, album].filter(Boolean).join(' ');
+    const response = await axios.get('https://api.discogs.com/database/search', {
+      headers: DISCOGS_HEADERS,
+      params: { q, type: 'release', format: 'vinyl', per_page: 1 }
+    });
+    const results = response.data.results || [];
+    res.json({ thumb: results[0]?.thumb || null });
+  } catch (err) {
+    res.json({ thumb: null });
+  }
+};
+
 // POST /check-collection — check of release al in collectie zit
 exports.checkCollection = async (req, res) => {
   try {

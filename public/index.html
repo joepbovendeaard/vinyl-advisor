@@ -1180,13 +1180,16 @@
         html += `<div id="dl-${letter}" style="color:var(--accent);font-size:13px;font-weight:700;padding:12px 0 4px;border-bottom:1px solid var(--border)">${letter}</div>`;
       }
       html += `
-        <div class="deelder-item" onclick="this.querySelector('.deelder-detail').style.display=this.querySelector('.deelder-detail').style.display==='none'?'':'none'" style="padding:12px 0;border-bottom:1px solid var(--surface2);cursor:pointer">
+        <div class="deelder-item" onclick="toggleDeelder(this, '${d.artist.replace(/'/g,"\\'")}', '${d.album.replace(/'/g,"\\'")}')" style="padding:12px 0;border-bottom:1px solid var(--surface2);cursor:pointer">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-weight:600;font-size:15px">${d.artist}</div>
-              <div style="color:var(--muted);font-size:13px">${d.album} <span style="color:var(--accent);font-size:11px">${d.prijsIndicatie}</span></div>
+            <div style="display:flex;gap:10px;align-items:center;flex:1;min-width:0">
+              <div class="deelder-thumb" style="width:48px;height:48px;min-width:48px;background:var(--surface2);border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px">🎵</div>
+              <div style="min-width:0">
+                <div style="font-weight:600;font-size:15px">${d.artist}</div>
+                <div style="color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.album} <span style="color:var(--accent);font-size:11px">${d.prijsIndicatie}</span></div>
+              </div>
             </div>
-            <div style="font-size:11px;color:var(--muted);text-align:right">
+            <div style="font-size:11px;color:var(--muted);text-align:right;min-width:60px">
               ${d.vindbaarheid}<br>
               <span style="font-size:10px">${d.year}</span>
             </div>
@@ -1205,6 +1208,30 @@
       `;
     });
     container.innerHTML = html;
+  }
+
+  const thumbCache = {};
+  async function toggleDeelder(el, artist, album) {
+    const detail = el.querySelector('.deelder-detail');
+    const isOpening = detail.style.display === 'none';
+    detail.style.display = isOpening ? '' : 'none';
+
+    if (isOpening) {
+      const thumb = el.querySelector('.deelder-thumb');
+      const key = artist + '|' + album;
+      if (!thumbCache[key]) {
+        try {
+          const res = await fetch('/search-thumb', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ artist, album })
+          }).then(r => r.json());
+          thumbCache[key] = res.thumb || '';
+        } catch { thumbCache[key] = ''; }
+      }
+      if (thumbCache[key]) {
+        thumb.innerHTML = `<img src="${thumbCache[key]}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='🎵'">`;
+      }
+    }
   }
 </script>
 </body>

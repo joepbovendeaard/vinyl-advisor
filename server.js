@@ -51,6 +51,7 @@ app.post('/analyze', (req, res, next) => {
 }, analyzeRoute);
 app.post('/check-collection', discogsRoute.checkCollection);
 app.post('/check-wantlist', discogsRoute.checkWantlist);
+app.post('/search-thumb', discogsRoute.searchThumb);
 app.post('/add-collection', discogsRoute.addToCollection);
 app.post('/add-wantlist', discogsRoute.addToWantlist);
 
