@@ -865,11 +865,12 @@
     if (all_releases && all_releases.length > 1) {
       document.getElementById('releaseSelector').style.display = '';
       const list = document.getElementById('releaseList');
+      const bestIdx = best_match ? all_releases.findIndex(r => r.id === best_match.id) : 0;
       list.innerHTML = all_releases.map((r, i) => `
-        <div class="release-item ${i === 0 ? 'selected' : ''}" onclick="selectRelease(${i})" data-index="${i}">
+        <div class="release-item ${i === bestIdx ? 'selected' : ''}" onclick="selectRelease(${i})" data-index="${i}">
           <img src="${r.thumb || ''}" onerror="this.style.display='none'" alt="">
           <div class="release-info">
-            <div class="release-title">${r.title || r.catno || '—'}</div>
+            <div class="release-title">${r.title || r.catno || '—'} ${i === bestIdx ? '<span style="color:var(--green);font-size:11px">✓ best match</span>' : ''}</div>
             <div class="release-meta">${[r.country, r.year, r.catno].filter(Boolean).join(' · ')}</div>
           </div>
           ${r.median_price ? `<div class="release-price">€${r.median_price.toFixed(2)}</div>` : ''}
