@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinyl Advisor — Essentials v1.0.0</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0e0e0e}
+#er{font-family:'Georgia',serif;background:#0e0e0e;color:#e8e4dc;min-height:100vh}
+.eh{padding:20px 24px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
+.eh-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.eh h1{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#555;font-family:'Helvetica Neue',sans-serif;font-weight:400}
+.ver{font-family:'Helvetica Neue',sans-serif;font-size:9px;color:#333;letter-spacing:.08em}
+.etabs{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.etabs::-webkit-scrollbar{display:none}
+.etab{background:none;border:none;color:#444;font-family:'Helvetica Neue',sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:9px 14px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .2s,border-color .2s;flex-shrink:0}
+.etab:hover{color:#777}
+.etab.active{color:#c8962a;border-bottom-color:#c8962a}
+.esb{padding:12px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;gap:8px}
+.esb input{background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;font-family:'Helvetica Neue',sans-serif;font-size:12px;padding:7px 12px;border-radius:3px;flex:1;outline:none;transition:border-color .2s}
+.esb input::placeholder{color:#444}
+.esb input:focus{border-color:rgba(200,150,42,0.35)}
+.econtent{padding:18px 24px}
+.slabel{font-family:'Helvetica Neue',sans-serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#444;margin-bottom:10px;padding-left:1px}
+.alist{border:1px solid rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.arow{background:#1a1a1a;display:grid;grid-template-columns:26px 1fr auto;align-items:center;padding:9px 12px;gap:12px;border-bottom:1px solid rgba(255,255,255,0.05);transition:background .15s;cursor:default}
+.arow:last-child{border-bottom:none}
+.arow:hover{background:#222}
+.anum{font-family:'Helvetica Neue',sans-serif;font-size:10px;color:#444;text-align:right}
+.ainfo{min-width:0}
+.atitle{font-size:13px;color:#e8e4dc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+.aartist{font-family:'Helvetica Neue',sans-serif;font-size:10px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ameta{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.badge{font-family:'Helvetica Neue',sans-serif;font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px}
+.bo{background:rgba(74,140,92,0.12);color:#6ab880;border:1px solid rgba(74,140,92,0.22)}
+.bw{background:rgba(200,150,42,0.12);color:#c8962a;border:1px solid rgba(200,150,42,0.28)}
+.bm{background:transparent;color:#444;border:1px solid rgba(255,255,255,0.08)}
+.ayear{font-family:'Helvetica Neue',sans-serif;font-size:10px;color:#444;min-width:32px;text-align:right}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.stat{background:#1a1a1a;border-radius:3px;padding:10px 12px;text-align:center}
+.stat-n{font-size:20px;font-weight:500;color:#e8e4dc;display:block}
+.stat-l{font-family:'Helvetica Neue',sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-top:2px;display:block}
+.stat-n.amber{color:#c8962a}
+.stat-n.green{color:#6ab880}
+.ai-block{background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:4px;margin-bottom:16px;overflow:hidden}
+.ai-bh{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center}
+.ai-bh span:first-child{font-size:12px;color:#e8e4dc}
+.ai-tag{font-family:'Helvetica Neue',sans-serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#444}
+.ai-pa{padding:12px 14px}
+.ai-pa p{font-family:'Helvetica Neue',sans-serif;font-size:11px;color:#666;margin-bottom:10px;line-height:1.5}
+textarea{width:100%;background:#0e0e0e;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;font-family:Georgia,serif;font-size:12px;padding:9px 11px;border-radius:3px;resize:vertical;min-height:60px;outline:none;transition:border-color .2s}
+textarea:focus{border-color:rgba(200,150,42,0.3)}
+.ai-acts{display:flex;gap:7px;margin-top:8px}
+.ai-resp{background:#0e0e0e;border:1px solid rgba(255,255,255,0.07);border-radius:3px;padding:12px;font-size:12px;color:#888;line-height:1.7;font-style:italic;display:none;margin-top:10px}
+.ai-resp.vis{display:block}
+.btn-p{background:rgba(200,150,42,0.13);border:1px solid rgba(200,150,42,0.28);color:#c8962a;font-family:'Helvetica Neue',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border-radius:3px;cursor:pointer;transition:background .2s}
+.btn-p:hover{background:rgba(200,150,42,0.22)}
+.btn-p:disabled{opacity:.4;cursor:not-allowed}
+.btn-g{background:transparent;border:1px solid rgba(255,255,255,0.1);color:#666;font-family:'Helvetica Neue',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border-radius:3px;cursor:pointer;transition:border-color .2s,color .2s}
+.btn-g:hover{border-color:rgba(255,255,255,0.2);color:#999}
+.wrow{background:#1a1a1a;border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:11px 14px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-bottom:1px;transition:background .15s}
+.wrow:hover{background:#222}
+.wtitle{font-size:13px;color:#e8e4dc;margin-bottom:2px}
+.wmeta{font-family:'Helvetica Neue',sans-serif;font-size:10px;color:#666}
+.wprice{font-family:'Helvetica Neue',sans-serif;font-size:11px;color:#555;text-align:right}
+.dot{display:inline-block;width:5px;height:5px;background:#c8962a;border-radius:50%;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:.2}50%{opacity:1}}
+.empty{font-family:'Helvetica Neue',sans-serif;font-size:12px;color:#444;padding:20px 0;text-align:center}
+</style>
+</head>
+<body>
+
+<div id="er">
+  <div class="eh">
+    <div class="eh-top">
+      <h1>Vinyl Advisor — Essentials</h1>
+      <span class="ver">v1.0.0</span>
+    </div>
+    <div class="etabs">
+      <button class="etab active" onclick="switchTab('overview')">Overzicht</button>
+      <button class="etab" onclick="switchTab('hardbop')">Hard Bop</button>
+      <button class="etab" onclick="switchTab('modal')">Modal Jazz</button>
+      <button class="etab" onclick="switchTab('cool')">Cool Jazz</button>
+      <button class="etab" onclick="switchTab('postbop')">Post-Bop</button>
+      <button class="etab" onclick="switchTab('latin')">Latin Jazz</button>
+      <button class="etab" onclick="switchTab('soul')">Soul Jazz</button>
+      <button class="etab" onclick="switchTab('bebop')">Bebop</button>
+      <button class="etab" onclick="switchTab('wishlist')">Wishlist</button>
+      <button class="etab" onclick="switchTab('ai')">AI-advies</button>
+    </div>
+  </div>
+  <div class="esb">
+    <input type="text" id="sq" placeholder="Zoek artiest of album..." oninput="doFilter()">
+  </div>
+  <div class="econtent" id="econtent"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// COLLECTIE-KOPPELING
+// Vervang deze twee sets met data uit je backend.
+// Bijv: const OWNED = new Set(window.VA_COLLECTION.map(lp => lp.title));
+// ─────────────────────────────────────────────
+const OWNED = new Set([
+  "Kind of Blue",
+  "Giant Steps",
+  "Moanin'"
+]);
+
+const WISH = new Set([
+  "A Love Supreme",
+  "Saxophone Colossus",
+  "Monk's Music",
+  "Night at the Village Vanguard"
+]);
+
+// ─────────────────────────────────────────────
+// WISHLIST-DATA
+// Vervang met je echte wishlist uit de backend.
+// ─────────────────────────────────────────────
+const WISHLIST_DATA = [
+  { t: "A Love Supreme",             a: "John Coltrane",    label: "Impulse! A-77",       y: 1965, price: "€85–180"  },
+  { t: "Saxophone Colossus",         a: "Sonny Rollins",    label: "Prestige 7079",        y: 1956, price: "€120–250" },
+  { t: "Monk's Music",               a: "Thelonious Monk",  label: "Riverside RLP 242",    y: 1957, price: "€95–200"  },
+  { t: "Night at the Village Vanguard", a: "Lee Morgan",    label: "Blue Note BLP 1521",   y: 1960, price: "€140–320" },
+];
+
+// ─────────────────────────────────────────────
+// GENRE-LIJSTEN — 7 × 25 albums
+// ─────────────────────────────────────────────
+const GENRES = {
+  hardbop: { label: "Hard Bop", desc: "New York, mid-50s tot mid-60s. Bluesgevoelig, gospelachtig, straight-ahead.", albums: [
+    { t: "Moanin'",                              a: "Art Blakey & The Jazz Messengers", y: 1958 },
+    { t: "Walkin'",                              a: "Miles Davis",                      y: 1954 },
+    { t: "Cookin' with the Miles Davis Quintet", a: "Miles Davis",                      y: 1957 },
+    { t: "The Clifford Brown & Max Roach Quintet", a: "Clifford Brown / Max Roach",     y: 1954 },
+    { t: "Sonny Side Up",                        a: "Dizzy Gillespie",                  y: 1957 },
+    { t: "Night at the Village Vanguard",        a: "Lee Morgan",                       y: 1958 },
+    { t: "The Sidewinder",                       a: "Lee Morgan",                       y: 1963 },
+    { t: "Speak No Evil",                        a: "Wayne Shorter",                    y: 1964 },
+    { t: "Adam's Apple",                         a: "Wayne Shorter",                    y: 1966 },
+    { t: "Hank Mobley",                          a: "Hank Mobley",                      y: 1957 },
+    { t: "Soul Station",                         a: "Hank Mobley",                      y: 1960 },
+    { t: "Horace Silver and the Jazz Messengers", a: "Horace Silver",                   y: 1955 },
+    { t: "Song for My Father",                   a: "Horace Silver",                    y: 1965 },
+    { t: "A Blowin' Session",                    a: "Johnny Griffin",                   y: 1957 },
+    { t: "The Incredible Jazz Guitar",           a: "Wes Montgomery",                   y: 1960 },
+    { t: "Full House",                           a: "Wes Montgomery",                   y: 1962 },
+    { t: "Workin' with the Miles Davis Quintet", a: "Miles Davis",                      y: 1959 },
+    { t: "Steamin' with the Miles Davis Quintet", a: "Miles Davis",                     y: 1961 },
+    { t: "Saxophone Colossus",                   a: "Sonny Rollins",                    y: 1956 },
+    { t: "Newk's Time",                          a: "Sonny Rollins",                    y: 1957 },
+    { t: "Cornbread",                            a: "Lee Morgan",                       y: 1965 },
+    { t: "Blowin' the Blues Away",               a: "Horace Silver",                    y: 1959 },
+    { t: "Doin' Allright",                       a: "Dexter Gordon",                    y: 1961 },
+    { t: "Go!",                                  a: "Dexter Gordon",                    y: 1962 },
+    { t: "The All Seeing Eye",                   a: "Wayne Shorter",                    y: 1965 },
+  ]},
+  modal: { label: "Modal Jazz", desc: "Akkoorden ingeruild voor modes. Miles opende de deur, anderen stapten door.", albums: [
+    { t: "Kind of Blue",             a: "Miles Davis",      y: 1959 },
+    { t: "A Love Supreme",           a: "John Coltrane",    y: 1965 },
+    { t: "Giant Steps",              a: "John Coltrane",    y: 1960 },
+    { t: "My Favorite Things",       a: "John Coltrane",    y: 1961 },
+    { t: "Maiden Voyage",            a: "Herbie Hancock",   y: 1965 },
+    { t: "Speak No Evil",            a: "Wayne Shorter",    y: 1964 },
+    { t: "Impressions",              a: "John Coltrane",    y: 1963 },
+    { t: "Coltrane",                 a: "John Coltrane",    y: 1962 },
+    { t: "Africa/Brass",             a: "John Coltrane",    y: 1961 },
+    { t: "E.S.P.",                   a: "Miles Davis",      y: 1965 },
+    { t: "Miles Smiles",             a: "Miles Davis",      y: 1966 },
+    { t: "Nefertiti",                a: "Miles Davis",      y: 1967 },
+    { t: "Filles de Kilimanjaro",    a: "Miles Davis",      y: 1968 },
+    { t: "In a Silent Way",          a: "Miles Davis",      y: 1969 },
+    { t: "Empyrean Isles",           a: "Herbie Hancock",   y: 1964 },
+    { t: "The All Seeing Eye",       a: "Wayne Shorter",    y: 1965 },
+    { t: "Schizophrenia",            a: "Wayne Shorter",    y: 1967 },
+    { t: "Witch Hunt",               a: "Wayne Shorter",    y: 1967 },
+    { t: "Point of Departure",       a: "Andrew Hill",      y: 1964 },
+    { t: "Smokestack",               a: "Andrew Hill",      y: 1963 },
+    { t: "Reaching Fourth",          a: "McCoy Tyner",      y: 1962 },
+    { t: "The Real McCoy",           a: "McCoy Tyner",      y: 1967 },
+    { t: "Expansions",               a: "McCoy Tyner",      y: 1968 },
+    { t: "Tender Moments",           a: "Lee Morgan",       y: 1967 },
+    { t: "Tauhid",                   a: "Pharoah Sanders",  y: 1967 },
+  ]},
+  cool: { label: "Cool Jazz", desc: "West Coast geluid. Gerestrained, licht, kamermuzikaal.", albums: [
+    { t: "Time Out",                             a: "Dave Brubeck Quartet",      y: 1959 },
+    { t: "Gerry Mulligan Quartet",               a: "Gerry Mulligan",             y: 1952 },
+    { t: "Birth of the Cool",                    a: "Miles Davis",                y: 1957 },
+    { t: "Waltz for Debby",                      a: "Bill Evans Trio",            y: 1961 },
+    { t: "Portrait in Jazz",                     a: "Bill Evans Trio",            y: 1960 },
+    { t: "Undercurrent",                         a: "Bill Evans / Jim Hall",      y: 1962 },
+    { t: "Explorations",                         a: "Bill Evans Trio",            y: 1961 },
+    { t: "Sunday at the Village Vanguard",       a: "Bill Evans Trio",            y: 1961 },
+    { t: "The Gerry Mulligan Songbook",          a: "Gerry Mulligan",             y: 1957 },
+    { t: "Quartet",                              a: "Dave Brubeck",               y: 1954 },
+    { t: "The Dave Brubeck Quartet at Carnegie Hall", a: "Dave Brubeck",          y: 1963 },
+    { t: "California Concert",                   a: "Art Pepper",                 y: 1971 },
+    { t: "Meets the Rhythm Section",             a: "Art Pepper",                 y: 1957 },
+    { t: "Lee Konitz with Warne Marsh",          a: "Lee Konitz",                 y: 1955 },
+    { t: "Motion",                               a: "Lee Konitz",                 y: 1961 },
+    { t: "Easy Living",                          a: "Stan Getz",                  y: 1963 },
+    { t: "Stan Getz Plays",                      a: "Stan Getz",                  y: 1952 },
+    { t: "Moonlight in Vermont",                 a: "Stan Getz / Johnny Smith",   y: 1952 },
+    { t: "Everybody Digs Bill Evans",            a: "Bill Evans",                 y: 1958 },
+    { t: "Conversations with Myself",            a: "Bill Evans",                 y: 1963 },
+    { t: "Alone",                                a: "Bill Evans",                 y: 1968 },
+    { t: "The Interplay Sessions",               a: "Bill Evans",                 y: 1962 },
+    { t: "The Jimmy Giuffre 3",                  a: "Jimmy Giuffre",              y: 1956 },
+    { t: "Tangents in Jazz",                     a: "Shorty Rogers",              y: 1955 },
+    { t: "Shelly Manne & His Men Vol.2",         a: "Shelly Manne",               y: 1953 },
+  ]},
+  postbop: { label: "Post-Bop", desc: "Na de modale revolutie. Complexer, vrijer, maar nog steeds swingend.", albums: [
+    { t: "Speak No Evil",                        a: "Wayne Shorter",              y: 1964 },
+    { t: "JuJu",                                 a: "Wayne Shorter",              y: 1964 },
+    { t: "E.S.P.",                               a: "Miles Davis",                y: 1965 },
+    { t: "Miles Smiles",                         a: "Miles Davis",                y: 1966 },
+    { t: "Maiden Voyage",                        a: "Herbie Hancock",             y: 1965 },
+    { t: "The Real McCoy",                       a: "McCoy Tyner",                y: 1967 },
+    { t: "Point of Departure",                   a: "Andrew Hill",                y: 1964 },
+    { t: "Black Fire",                           a: "Andrew Hill",                y: 1963 },
+    { t: "Out to Lunch",                         a: "Eric Dolphy",                y: 1964 },
+    { t: "Iron Man",                             a: "Eric Dolphy",                y: 1963 },
+    { t: "Conversations",                        a: "Bill Evans",                 y: 1963 },
+    { t: "Intuition",                            a: "Bill Evans",                 y: 1974 },
+    { t: "Telephone",                            a: "Lee Morgan",                 y: 1965 },
+    { t: "Chasin' the Trane",                    a: "John Coltrane",              y: 1963 },
+    { t: "Crescent",                             a: "John Coltrane",              y: 1964 },
+    { t: "The John Coltrane Quartet Plays",      a: "John Coltrane",              y: 1965 },
+    { t: "Joe Henderson Page One",               a: "Joe Henderson",              y: 1963 },
+    { t: "In 'n Out",                            a: "Joe Henderson",              y: 1964 },
+    { t: "Mode for Joe",                         a: "Joe Henderson",              y: 1966 },
+    { t: "Our Man in Jazz",                      a: "Sonny Rollins",              y: 1962 },
+    { t: "East Broadway Rundown",                a: "Sonny Rollins",              y: 1966 },
+    { t: "Happenings",                           a: "Bobby Hutcherson",           y: 1966 },
+    { t: "Components",                           a: "Bobby Hutcherson",           y: 1965 },
+    { t: "Oblique",                              a: "Bobby Hutcherson",           y: 1967 },
+    { t: "Idle Moments",                         a: "Grant Green",                y: 1963 },
+  ]},
+  latin: { label: "Latin Jazz", desc: "Afro-Cubaanse en Braziliaanse ritmes ontmoeten de jazzharmonie.", albums: [
+    { t: "Getz/Gilberto",                        a: "Stan Getz / João Gilberto",  y: 1964 },
+    { t: "Desafinado",                           a: "Stan Getz / Charlie Byrd",   y: 1962 },
+    { t: "Jazz Samba",                           a: "Stan Getz / Charlie Byrd",   y: 1962 },
+    { t: "Mambo Birdland",                       a: "Tito Puente",                y: 1950 },
+    { t: "Cuban Fire!",                          a: "Stan Kenton",                y: 1956 },
+    { t: "Afro",                                 a: "Machito",                    y: 1954 },
+    { t: "Afro-Cuban Jazz",                      a: "Chico O'Farrill",            y: 1950 },
+    { t: "Manteca",                              a: "Dizzy Gillespie",            y: 1954 },
+    { t: "Groovin' High",                        a: "Dizzy Gillespie",            y: 1955 },
+    { t: "Tjader Plays Mambo",                   a: "Cal Tjader",                 y: 1954 },
+    { t: "Soul Sauce",                           a: "Cal Tjader",                 y: 1965 },
+    { t: "Wave",                                 a: "Antônio Carlos Jobim",       y: 1967 },
+    { t: "Stone Flower",                         a: "Antônio Carlos Jobim",       y: 1970 },
+    { t: "The Composer of Desafinado Plays",     a: "Antônio Carlos Jobim",       y: 1963 },
+    { t: "Elis & Tom",                           a: "Elis Regina / Tom Jobim",    y: 1974 },
+    { t: "Vinicius de Moraes",                   a: "Vinicius de Moraes",         y: 1962 },
+    { t: "João Gilberto",                        a: "João Gilberto",              y: 1961 },
+    { t: "Flora",                                a: "Flora Purim",                y: 1972 },
+    { t: "Airto",                                a: "Airto Moreira",              y: 1970 },
+    { t: "Seeds on the Ground",                  a: "Airto Moreira",              y: 1971 },
+    { t: "La Leyenda de la Hora",                a: "Irakere",                    y: 1977 },
+    { t: "Explosion",                            a: "Joe Cuba Sextet",            y: 1966 },
+    { t: "Bamboleate",                           a: "Richie Ray & Bobby Cruz",    y: 1967 },
+    { t: "Eddie Palmieri",                       a: "Eddie Palmieri",             y: 1965 },
+    { t: "Molasses",                             a: "Johnny Hammond",             y: 1974 },
+  ]},
+  soul: { label: "Soul Jazz", desc: "Blueswortel, funk en gospel. Blue Note en Prestige, late 50s-70s.", albums: [
+    { t: "The Sermon!",                          a: "Jimmy Smith",                y: 1958 },
+    { t: "Back at the Chicken Shack",            a: "Jimmy Smith",                y: 1963 },
+    { t: "Midnight Special",                     a: "Jimmy Smith",                y: 1960 },
+    { t: "The Cat",                              a: "Jimmy Smith",                y: 1964 },
+    { t: "Mellow Madness",                       a: "Wes Montgomery",             y: 1966 },
+    { t: "A Day in the Life",                    a: "Wes Montgomery",             y: 1967 },
+    { t: "The Sidewinder",                       a: "Lee Morgan",                 y: 1963 },
+    { t: "Cornbread",                            a: "Lee Morgan",                 y: 1965 },
+    { t: "Song for My Father",                   a: "Horace Silver",              y: 1965 },
+    { t: "The Tokyo Blues",                      a: "Horace Silver",              y: 1962 },
+    { t: "Funk in France",                       a: "Lou Donaldson",              y: 1974 },
+    { t: "Alligator Bogaloo",                    a: "Lou Donaldson",              y: 1967 },
+    { t: "Mr. Shing-a-Ling",                     a: "Lou Donaldson",              y: 1967 },
+    { t: "Legends of Acid Jazz",                 a: "Reuben Wilson",              y: 1969 },
+    { t: "On Broadway",                          a: "Grant Green",                y: 1963 },
+    { t: "Idle Moments",                         a: "Grant Green",                y: 1963 },
+    { t: "Alive!",                               a: "Grant Green",                y: 1970 },
+    { t: "Let the Music Play",                   a: "Grant Green",                y: 1966 },
+    { t: "Blowin' the Blues Away",               a: "Horace Silver",              y: 1959 },
+    { t: "Finger Poppin'",                       a: "Horace Silver",              y: 1959 },
+    { t: "The Soulful Piano of Junior Mance",    a: "Junior Mance",               y: 1960 },
+    { t: "The Three Sounds",                     a: "The Three Sounds",           y: 1958 },
+    { t: "Groove Merchant",                      a: "Jerome Richardson",          y: 1967 },
+    { t: "The Magician",                         a: "Lonnie Smith",               y: 1973 },
+    { t: "Turning Point",                        a: "Lonnie Smith",               y: 1969 },
+  ]},
+  bebop: { label: "Bebop", desc: "De moeder van alle moderne jazz. 40s New York, razendsnelle harmonieën.", albums: [
+    { t: "Jazz at Massey Hall",                  a: "Charlie Parker / Dizzy Gillespie", y: 1953 },
+    { t: "Bird and Diz",                         a: "Charlie Parker / Dizzy Gillespie", y: 1952 },
+    { t: "Charlie Parker with Strings",          a: "Charlie Parker",             y: 1950 },
+    { t: "The Genius of Charlie Parker",         a: "Charlie Parker",             y: 1956 },
+    { t: "Monk's Music",                         a: "Thelonious Monk",            y: 1957 },
+    { t: "Brilliant Corners",                    a: "Thelonious Monk",            y: 1957 },
+    { t: "Thelonious Monk with John Coltrane",   a: "Thelonious Monk / John Coltrane", y: 1957 },
+    { t: "Thelonious Monk Quartet with John Coltrane at Carnegie Hall", a: "Thelonious Monk", y: 1957 },
+    { t: "Bud Powell's Moods",                   a: "Bud Powell",                 y: 1951 },
+    { t: "The Amazing Bud Powell Vol.1",         a: "Bud Powell",                 y: 1949 },
+    { t: "Tempus Fugit",                         a: "Bud Powell",                 y: 1953 },
+    { t: "Groovin' High",                        a: "Dizzy Gillespie",            y: 1945 },
+    { t: "Dizzy Gillespie and His Big Band",     a: "Dizzy Gillespie",            y: 1947 },
+    { t: "The Quintet",                          a: "Clifford Brown / Max Roach", y: 1955 },
+    { t: "At Basin Street",                      a: "Clifford Brown / Max Roach", y: 1956 },
+    { t: "Clifford Brown with Strings",          a: "Clifford Brown",             y: 1955 },
+    { t: "Sonny Rollins Vol.1",                  a: "Sonny Rollins",              y: 1956 },
+    { t: "Workin' and Steamin'",                 a: "Miles Davis",                y: 1956 },
+    { t: "Miles Davis Vol.1",                    a: "Miles Davis",                y: 1952 },
+    { t: "Bags' Groove",                         a: "Miles Davis",                y: 1954 },
+    { t: "Cookin'",                              a: "Miles Davis",                y: 1956 },
+    { t: "Tadd Dameron Quartet",                 a: "Tadd Dameron",               y: 1956 },
+    { t: "John Lewis",                           a: "John Lewis",                 y: 1958 },
+    { t: "Oscar Peterson Trio + One",            a: "Oscar Peterson",             y: 1964 },
+    { t: "Night Train",                          a: "Oscar Peterson",             y: 1963 },
+  ]},
+};
+
+// ─────────────────────────────────────────────
+// APP LOGIC
+// ─────────────────────────────────────────────
+let currentTab = 'overview', sq = '';
+
+function status(t) {
+  if (OWNED.has(t)) return 'owned';
+  if (WISH.has(t))  return 'wish';
+  return 'missing';
+}
+
+function badge(s) {
+  if (s === 'owned') return '<span class="badge bo">In collectie</span>';
+  if (s === 'wish')  return '<span class="badge bw">Wishlist</span>';
+  return '<span class="badge bm">Kopen</span>';
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.etab').forEach((t, i) => {
+    const tabs = ['overview','hardbop','modal','cool','postbop','latin','soul','bebop','wishlist','ai'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  render();
+}
+
+function doFilter() { sq = document.getElementById('sq').value.toLowerCase(); render(); }
+
+function filterAlbums(list) {
+  if (!sq) return list;
+  return list.filter(a => a.t.toLowerCase().includes(sq) || a.a.toLowerCase().includes(sq));
+}
+
+function renderAlbumList(albums) {
+  const f = filterAlbums(albums);
+  if (!f.length) return '<div class="empty">Geen resultaten</div>';
+  return '<div class="alist">' + f.map((a, i) => {
+    const s = status(a.t);
+    return `<div class="arow">
+      <span class="anum">${i + 1}</span>
+      <div class="ainfo">
+        <div class="atitle">${a.t}</div>
+        <div class="aartist">${a.a}</div>
+      </div>
+      <div class="ameta">${badge(s)}<span class="ayear">${a.y}</span></div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function renderOverview() {
+  const all = Object.values(GENRES).flatMap(g => g.albums);
+  const totalOwned = all.filter(a => OWNED.has(a.t)).length;
+  const totalWish  = all.filter(a => WISH.has(a.t)).length;
+  let html = `<div class="stats">
+    <div class="stat"><span class="stat-n">${all.length}</span><span class="stat-l">Totaal essentials</span></div>
+    <div class="stat"><span class="stat-n green">${totalOwned}</span><span class="stat-l">In collectie</span></div>
+    <div class="stat"><span class="stat-n amber">${totalWish}</span><span class="stat-l">Op wishlist</span></div>
+  </div>`;
+  Object.entries(GENRES).forEach(([, g]) => {
+    const f = filterAlbums(g.albums);
+    if (!f.length && sq) return;
+    const owned = g.albums.filter(a => OWNED.has(a.t)).length;
+    html += `<p class="slabel" style="margin-top:16px">${g.label} — ${owned}/${g.albums.length} in collectie</p>`;
+    html += renderAlbumList(g.albums.slice(0, 5));
+  });
+  return html;
+}
+
+function renderGenre(key) {
+  const g = GENRES[key];
+  const owned = g.albums.filter(a => OWNED.has(a.t)).length;
+  const wish  = g.albums.filter(a => WISH.has(a.t)).length;
+  let html = `<div class="stats">
+    <div class="stat"><span class="stat-n">${g.albums.length}</span><span class="stat-l">Albums</span></div>
+    <div class="stat"><span class="stat-n green">${owned}</span><span class="stat-l">In collectie</span></div>
+    <div class="stat"><span class="stat-n amber">${wish}</span><span class="stat-l">Wishlist</span></div>
+  </div>
+  <p class="slabel" style="margin-bottom:8px;color:#666;font-size:10px;font-family:Georgia,serif;font-style:italic;letter-spacing:0;text-transform:none">${g.desc}</p>`;
+  html += renderAlbumList(g.albums);
+  return html;
+}
+
+function renderWishlist() {
+  const f = WISHLIST_DATA.filter(w => !sq || w.t.toLowerCase().includes(sq) || w.a.toLowerCase().includes(sq));
+  if (!f.length) return '<div class="empty">Geen resultaten</div>';
+  return f.map(w => `<div class="wrow">
+    <div><div class="wtitle">${w.t}</div><div class="wmeta">${w.a} — ${w.label}, ${w.y}</div></div>
+    <div class="wprice">${w.price}</div>
+  </div>`).join('');
+}
+
+function renderAI() {
+  return `
+  <div class="ai-block">
+    <div class="ai-bh"><span>Persoonlijk advies</span><span class="ai-tag"><span class="dot"></span> Claude Sonnet</span></div>
+    <div class="ai-pa">
+      <p>Vraag advies op basis van je collectie. Vermeld genre, stemming of pressing voorkeur.</p>
+      <textarea id="aip" placeholder="Bijv: ik heb Kind of Blue — wat is de volgende stap in modal jazz?"></textarea>
+      <div class="ai-acts">
+        <button class="btn-p" id="aib" onclick="askA()">Vraag advies</button>
+        <button class="btn-g" onclick="clearA()">Wis</button>
+      </div>
+      <div class="ai-resp" id="air"></div>
+    </div>
+  </div>
+  <div class="ai-block">
+    <div class="ai-bh"><span>Pressing-check</span><span class="ai-tag">Discogs context</span></div>
+    <div class="ai-pa">
+      <p>Welk pressing is het meest waard? Label, matrijs, prijsrange.</p>
+      <textarea id="pip" placeholder="Bijv: Kind of Blue — welke pressing, wat betalen?"></textarea>
+      <div class="ai-acts">
+        <button class="btn-p" id="pib" onclick="askP()">Check pressing</button>
+      </div>
+      <div class="ai-resp" id="pir"></div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const c = document.getElementById('econtent');
+  if (currentTab === 'overview')  { c.innerHTML = renderOverview(); return; }
+  if (currentTab === 'wishlist')  { c.innerHTML = '<p class="slabel">Wishlist LP\'s</p>' + renderWishlist(); return; }
+  if (currentTab === 'ai')        { c.innerHTML = renderAI(); return; }
+  if (GENRES[currentTab])         { c.innerHTML = renderGenre(currentTab); return; }
+}
+
+async function callClaude(system, prompt, btnId, respId) {
+  const btn  = document.getElementById(btnId);
+  const resp = document.getElementById(respId);
+  if (!prompt.trim()) return;
+  btn.disabled = true;
+  btn.textContent = 'Laden...';
+  resp.classList.add('vis');
+  resp.textContent = 'Claude denkt na...';
+  const collectie = [...OWNED].join(', ');
+  const wish      = [...WISH].join(', ');
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `${system}\n\nCollectie van de gebruiker: ${collectie}. Wishlist: ${wish}.`,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const d = await r.json();
+    resp.textContent = d.content?.filter(b => b.type === 'text').map(b => b.text).join('') || 'Geen antwoord.';
+  } catch(e) {
+    resp.textContent = 'Verbindingsfout.';
+  }
+  btn.disabled = false;
+  btn.textContent = btnId === 'aib' ? 'Vraag advies' : 'Check pressing';
+}
+
+function askA()  { callClaude('Je bent een kenner van jazz vinyl. Geef kort, precies advies — max 5 zinnen. Vermeld pressing details waar relevant. Nederlands, informeel maar deskundig.', document.getElementById('aip').value, 'aib', 'air'); }
+function askP()  { callClaude('Je bent expert in jazz vinyl pressings en Discogs. Geef per album: beste originele pressing (label, jaar, cat.nr), realistisch prijsbereik, 1 concrete tip. Max 5 zinnen. Nederlands.', document.getElementById('pip').value, 'pib', 'pir'); }
+function clearA() {
+  const i = document.getElementById('aip');
+  const r = document.getElementById('air');
+  if (i) i.value = '';
+  if (r) { r.textContent = ''; r.classList.remove('vis'); }
+}
+
+render();
+</script>
+</body>
+</html>
