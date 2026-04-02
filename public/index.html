@@ -470,6 +470,7 @@
 <div style="display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:9">
   <button class="tab-btn active" id="tabAnalyze" onclick="switchTab('analyze')" style="flex:1;padding:12px;border:none;background:none;color:var(--accent);font-weight:700;font-size:14px;cursor:pointer;border-bottom:2px solid var(--accent)">📸 Analyzer</button>
   <button class="tab-btn" id="tabDeelder" onclick="switchTab('deelder')" style="flex:1;padding:12px;border:none;background:none;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;border-bottom:2px solid transparent">🎷 Deelder</button>
+  <button class="tab-btn" id="tabEssentials" onclick="switchTab('essentials')" style="flex:1;padding:12px;border:none;background:none;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;border-bottom:2px solid transparent">📋 Essentials</button>
 </div>
 
 <!-- ANALYZER SCREEN -->
@@ -603,6 +604,26 @@
   </div>
 </div>
 <!-- END DEELDER SCREEN -->
+
+<!-- ESSENTIALS SCREEN -->
+<div id="screenEssentials" style="display:none">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;position:sticky;top:61px;background:var(--bg);z-index:9">
+    <input type="text" id="essSearch" placeholder="Zoek artiest of album..." oninput="essFilter()" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:14px;padding:8px 12px;border-radius:10px;outline:none">
+    <span style="font-size:9px;color:#333;letter-spacing:.06em">v1.0.0</span>
+  </div>
+  <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);padding:0 4px;background:var(--bg);position:sticky;top:109px;z-index:9" id="essGenreTabs">
+    <button onclick="essTab('overview')" id="esstab-overview" style="flex-shrink:0;background:none;border:none;color:var(--accent);font-size:12px;padding:8px 12px;cursor:pointer;border-bottom:2px solid var(--accent);font-weight:700">Alles</button>
+    <button onclick="essTab('hardbop')" id="esstab-hardbop" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:12px;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent">Hard Bop</button>
+    <button onclick="essTab('modal')" id="esstab-modal" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:12px;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent">Modal</button>
+    <button onclick="essTab('cool')" id="esstab-cool" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:12px;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent">Cool</button>
+    <button onclick="essTab('postbop')" id="esstab-postbop" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:12px;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent">Post-Bop</button>
+    <button onclick="essTab('latin')" id="esstab-latin" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:12px;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent">Latin</button>
+    <button onclick="essTab('soul')" id="esstab-soul" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:12px;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent">Soul</button>
+    <button onclick="essTab('bebop')" id="esstab-bebop" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:12px;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent">Bebop</button>
+  </div>
+  <div id="essContent" style="padding:16px;max-width:600px;margin:0 auto"></div>
+</div>
+<!-- END ESSENTIALS SCREEN -->
 
 <!-- Duplicate modal -->
 <div id="dupModal">
@@ -1158,13 +1179,214 @@
   function switchTab(tab) {
     document.getElementById('screenAnalyze').style.display = tab === 'analyze' ? '' : 'none';
     document.getElementById('screenDeelder').style.display = tab === 'deelder' ? '' : 'none';
-    document.getElementById('tabAnalyze').style.color = tab === 'analyze' ? 'var(--accent)' : 'var(--muted)';
-    document.getElementById('tabAnalyze').style.borderBottomColor = tab === 'analyze' ? 'var(--accent)' : 'transparent';
-    document.getElementById('tabAnalyze').style.fontWeight = tab === 'analyze' ? '700' : '600';
-    document.getElementById('tabDeelder').style.color = tab === 'deelder' ? 'var(--accent)' : 'var(--muted)';
-    document.getElementById('tabDeelder').style.borderBottomColor = tab === 'deelder' ? 'var(--accent)' : 'transparent';
-    document.getElementById('tabDeelder').style.fontWeight = tab === 'deelder' ? '700' : '600';
+    document.getElementById('screenEssentials').style.display = tab === 'essentials' ? '' : 'none';
+    ['tabAnalyze','tabDeelder','tabEssentials'].forEach(id => {
+      const key = id.replace('tab','').toLowerCase();
+      const active = tab === key;
+      document.getElementById(id).style.color = active ? 'var(--accent)' : 'var(--muted)';
+      document.getElementById(id).style.borderBottomColor = active ? 'var(--accent)' : 'transparent';
+      document.getElementById(id).style.fontWeight = active ? '700' : '600';
+    });
     if (tab === 'deelder') renderDeelderList();
+    if (tab === 'essentials') essRender();
+  }
+
+  // === ESSENTIALS ===
+  const ESS_GENRES = {
+    hardbop: { label: 'Hard Bop', desc: 'New York, mid-50s tot mid-60s. Bluesgevoelig, gospelachtig, straight-ahead.', albums: [
+      {t:"Moanin'",a:"Art Blakey & The Jazz Messengers",y:1958},{t:"Walkin'",a:"Miles Davis",y:1954},
+      {t:"Cookin' with the Miles Davis Quintet",a:"Miles Davis",y:1957},{t:"The Clifford Brown & Max Roach Quintet",a:"Clifford Brown / Max Roach",y:1954},
+      {t:"Sonny Side Up",a:"Dizzy Gillespie",y:1957},{t:"Night at the Village Vanguard",a:"Lee Morgan",y:1958},
+      {t:"The Sidewinder",a:"Lee Morgan",y:1963},{t:"Speak No Evil",a:"Wayne Shorter",y:1964},
+      {t:"Adam's Apple",a:"Wayne Shorter",y:1966},{t:"Hank Mobley",a:"Hank Mobley",y:1957},
+      {t:"Soul Station",a:"Hank Mobley",y:1960},{t:"Horace Silver and the Jazz Messengers",a:"Horace Silver",y:1955},
+      {t:"Song for My Father",a:"Horace Silver",y:1965},{t:"A Blowin' Session",a:"Johnny Griffin",y:1957},
+      {t:"The Incredible Jazz Guitar",a:"Wes Montgomery",y:1960},{t:"Full House",a:"Wes Montgomery",y:1962},
+      {t:"Workin' with the Miles Davis Quintet",a:"Miles Davis",y:1959},{t:"Steamin' with the Miles Davis Quintet",a:"Miles Davis",y:1961},
+      {t:"Saxophone Colossus",a:"Sonny Rollins",y:1956},{t:"Newk's Time",a:"Sonny Rollins",y:1957},
+      {t:"Cornbread",a:"Lee Morgan",y:1965},{t:"Blowin' the Blues Away",a:"Horace Silver",y:1959},
+      {t:"Doin' Allright",a:"Dexter Gordon",y:1961},{t:"Go!",a:"Dexter Gordon",y:1962},
+      {t:"The All Seeing Eye",a:"Wayne Shorter",y:1965}
+    ]},
+    modal: { label: 'Modal Jazz', desc: 'Akkoorden ingeruild voor modes. Miles opende de deur, anderen stapten door.', albums: [
+      {t:"Kind of Blue",a:"Miles Davis",y:1959},{t:"A Love Supreme",a:"John Coltrane",y:1965},
+      {t:"Giant Steps",a:"John Coltrane",y:1960},{t:"My Favorite Things",a:"John Coltrane",y:1961},
+      {t:"Maiden Voyage",a:"Herbie Hancock",y:1965},{t:"Speak No Evil",a:"Wayne Shorter",y:1964},
+      {t:"Impressions",a:"John Coltrane",y:1963},{t:"Coltrane",a:"John Coltrane",y:1962},
+      {t:"Africa/Brass",a:"John Coltrane",y:1961},{t:"E.S.P.",a:"Miles Davis",y:1965},
+      {t:"Miles Smiles",a:"Miles Davis",y:1966},{t:"Nefertiti",a:"Miles Davis",y:1967},
+      {t:"Filles de Kilimanjaro",a:"Miles Davis",y:1968},{t:"In a Silent Way",a:"Miles Davis",y:1969},
+      {t:"Empyrean Isles",a:"Herbie Hancock",y:1964},{t:"The All Seeing Eye",a:"Wayne Shorter",y:1965},
+      {t:"Schizophrenia",a:"Wayne Shorter",y:1967},{t:"Point of Departure",a:"Andrew Hill",y:1964},
+      {t:"Smokestack",a:"Andrew Hill",y:1963},{t:"Reaching Fourth",a:"McCoy Tyner",y:1962},
+      {t:"The Real McCoy",a:"McCoy Tyner",y:1967},{t:"Expansions",a:"McCoy Tyner",y:1968},
+      {t:"Tender Moments",a:"Lee Morgan",y:1967},{t:"Tauhid",a:"Pharoah Sanders",y:1967},
+      {t:"Witch Hunt",a:"Wayne Shorter",y:1967}
+    ]},
+    cool: { label: 'Cool Jazz', desc: 'West Coast geluid. Gerestrained, licht, kamermuzikaal.', albums: [
+      {t:"Time Out",a:"Dave Brubeck Quartet",y:1959},{t:"Gerry Mulligan Quartet",a:"Gerry Mulligan",y:1952},
+      {t:"Birth of the Cool",a:"Miles Davis",y:1957},{t:"Waltz for Debby",a:"Bill Evans Trio",y:1961},
+      {t:"Portrait in Jazz",a:"Bill Evans Trio",y:1960},{t:"Undercurrent",a:"Bill Evans / Jim Hall",y:1962},
+      {t:"Explorations",a:"Bill Evans Trio",y:1961},{t:"Sunday at the Village Vanguard",a:"Bill Evans Trio",y:1961},
+      {t:"The Gerry Mulligan Songbook",a:"Gerry Mulligan",y:1957},{t:"Quartet",a:"Dave Brubeck",y:1954},
+      {t:"The Dave Brubeck Quartet at Carnegie Hall",a:"Dave Brubeck",y:1963},{t:"California Concert",a:"Art Pepper",y:1971},
+      {t:"Meets the Rhythm Section",a:"Art Pepper",y:1957},{t:"Lee Konitz with Warne Marsh",a:"Lee Konitz",y:1955},
+      {t:"Motion",a:"Lee Konitz",y:1961},{t:"Easy Living",a:"Stan Getz",y:1963},
+      {t:"Stan Getz Plays",a:"Stan Getz",y:1952},{t:"Moonlight in Vermont",a:"Stan Getz / Johnny Smith",y:1952},
+      {t:"Everybody Digs Bill Evans",a:"Bill Evans",y:1958},{t:"Conversations with Myself",a:"Bill Evans",y:1963},
+      {t:"Alone",a:"Bill Evans",y:1968},{t:"The Interplay Sessions",a:"Bill Evans",y:1962},
+      {t:"The Jimmy Giuffre 3",a:"Jimmy Giuffre",y:1956},{t:"Tangents in Jazz",a:"Shorty Rogers",y:1955},
+      {t:"Shelly Manne & His Men Vol.2",a:"Shelly Manne",y:1953}
+    ]},
+    postbop: { label: 'Post-Bop', desc: 'Na de modale revolutie. Complexer, vrijer, maar nog steeds swingend.', albums: [
+      {t:"Speak No Evil",a:"Wayne Shorter",y:1964},{t:"JuJu",a:"Wayne Shorter",y:1964},
+      {t:"E.S.P.",a:"Miles Davis",y:1965},{t:"Miles Smiles",a:"Miles Davis",y:1966},
+      {t:"Maiden Voyage",a:"Herbie Hancock",y:1965},{t:"The Real McCoy",a:"McCoy Tyner",y:1967},
+      {t:"Point of Departure",a:"Andrew Hill",y:1964},{t:"Black Fire",a:"Andrew Hill",y:1963},
+      {t:"Out to Lunch",a:"Eric Dolphy",y:1964},{t:"Iron Man",a:"Eric Dolphy",y:1963},
+      {t:"Chasin' the Trane",a:"John Coltrane",y:1963},{t:"Crescent",a:"John Coltrane",y:1964},
+      {t:"The John Coltrane Quartet Plays",a:"John Coltrane",y:1965},{t:"Joe Henderson Page One",a:"Joe Henderson",y:1963},
+      {t:"In 'n Out",a:"Joe Henderson",y:1964},{t:"Mode for Joe",a:"Joe Henderson",y:1966},
+      {t:"Our Man in Jazz",a:"Sonny Rollins",y:1962},{t:"East Broadway Rundown",a:"Sonny Rollins",y:1966},
+      {t:"Happenings",a:"Bobby Hutcherson",y:1966},{t:"Components",a:"Bobby Hutcherson",y:1965},
+      {t:"Oblique",a:"Bobby Hutcherson",y:1967},{t:"Idle Moments",a:"Grant Green",y:1963},
+      {t:"Telephone",a:"Lee Morgan",y:1965},{t:"Intuition",a:"Bill Evans",y:1974},
+      {t:"Conversations",a:"Bill Evans",y:1963}
+    ]},
+    latin: { label: 'Latin Jazz', desc: 'Afro-Cubaanse en Braziliaanse ritmes ontmoeten de jazzharmonie.', albums: [
+      {t:"Getz/Gilberto",a:"Stan Getz / João Gilberto",y:1964},{t:"Jazz Samba",a:"Stan Getz / Charlie Byrd",y:1962},
+      {t:"Desafinado",a:"Stan Getz / Charlie Byrd",y:1962},{t:"Mambo Birdland",a:"Tito Puente",y:1950},
+      {t:"Cuban Fire!",a:"Stan Kenton",y:1956},{t:"Afro",a:"Machito",y:1954},
+      {t:"Afro-Cuban Jazz",a:"Chico O'Farrill",y:1950},{t:"Manteca",a:"Dizzy Gillespie",y:1954},
+      {t:"Groovin' High",a:"Dizzy Gillespie",y:1955},{t:"Tjader Plays Mambo",a:"Cal Tjader",y:1954},
+      {t:"Soul Sauce",a:"Cal Tjader",y:1965},{t:"Wave",a:"Antônio Carlos Jobim",y:1967},
+      {t:"Stone Flower",a:"Antônio Carlos Jobim",y:1970},{t:"The Composer of Desafinado Plays",a:"Antônio Carlos Jobim",y:1963},
+      {t:"Elis & Tom",a:"Elis Regina / Tom Jobim",y:1974},{t:"João Gilberto",a:"João Gilberto",y:1961},
+      {t:"Flora",a:"Flora Purim",y:1972},{t:"Airto",a:"Airto Moreira",y:1970},
+      {t:"Seeds on the Ground",a:"Airto Moreira",y:1971},{t:"La Leyenda de la Hora",a:"Irakere",y:1977},
+      {t:"Explosion",a:"Joe Cuba Sextet",y:1966},{t:"Bamboleate",a:"Richie Ray & Bobby Cruz",y:1967},
+      {t:"Eddie Palmieri",a:"Eddie Palmieri",y:1965},{t:"Molasses",a:"Johnny Hammond",y:1974},
+      {t:"Vinicius de Moraes",a:"Vinicius de Moraes",y:1962}
+    ]},
+    soul: { label: 'Soul Jazz', desc: 'Blueswortel, funk en gospel. Blue Note en Prestige, late 50s-70s.', albums: [
+      {t:"The Sermon!",a:"Jimmy Smith",y:1958},{t:"Back at the Chicken Shack",a:"Jimmy Smith",y:1963},
+      {t:"Midnight Special",a:"Jimmy Smith",y:1960},{t:"The Cat",a:"Jimmy Smith",y:1964},
+      {t:"Mellow Madness",a:"Wes Montgomery",y:1966},{t:"A Day in the Life",a:"Wes Montgomery",y:1967},
+      {t:"The Sidewinder",a:"Lee Morgan",y:1963},{t:"Cornbread",a:"Lee Morgan",y:1965},
+      {t:"Song for My Father",a:"Horace Silver",y:1965},{t:"The Tokyo Blues",a:"Horace Silver",y:1962},
+      {t:"Funk in France",a:"Lou Donaldson",y:1974},{t:"Alligator Bogaloo",a:"Lou Donaldson",y:1967},
+      {t:"Mr. Shing-a-Ling",a:"Lou Donaldson",y:1967},{t:"On Broadway",a:"Grant Green",y:1963},
+      {t:"Idle Moments",a:"Grant Green",y:1963},{t:"Alive!",a:"Grant Green",y:1970},
+      {t:"Let the Music Play",a:"Grant Green",y:1966},{t:"Blowin' the Blues Away",a:"Horace Silver",y:1959},
+      {t:"Finger Poppin'",a:"Horace Silver",y:1959},{t:"The Soulful Piano of Junior Mance",a:"Junior Mance",y:1960},
+      {t:"The Three Sounds",a:"The Three Sounds",y:1958},{t:"Groove Merchant",a:"Jerome Richardson",y:1967},
+      {t:"Legends of Acid Jazz",a:"Reuben Wilson",y:1969},{t:"The Magician",a:"Lonnie Smith",y:1973},
+      {t:"Turning Point",a:"Lonnie Smith",y:1969}
+    ]},
+    bebop: { label: 'Bebop', desc: 'De moeder van alle moderne jazz. 40s New York, razendsnelle harmonieën.', albums: [
+      {t:"Jazz at Massey Hall",a:"Charlie Parker / Dizzy Gillespie",y:1953},{t:"Bird and Diz",a:"Charlie Parker / Dizzy Gillespie",y:1952},
+      {t:"Charlie Parker with Strings",a:"Charlie Parker",y:1950},{t:"The Genius of Charlie Parker",a:"Charlie Parker",y:1956},
+      {t:"Monk's Music",a:"Thelonious Monk",y:1957},{t:"Brilliant Corners",a:"Thelonious Monk",y:1957},
+      {t:"Thelonious Monk with John Coltrane",a:"Thelonious Monk / John Coltrane",y:1957},
+      {t:"Thelonious Monk Quartet with John Coltrane at Carnegie Hall",a:"Thelonious Monk",y:1957},
+      {t:"Bud Powell's Moods",a:"Bud Powell",y:1951},{t:"The Amazing Bud Powell Vol.1",a:"Bud Powell",y:1949},
+      {t:"Tempus Fugit",a:"Bud Powell",y:1953},{t:"Groovin' High",a:"Dizzy Gillespie",y:1945},
+      {t:"Dizzy Gillespie and His Big Band",a:"Dizzy Gillespie",y:1947},{t:"The Quintet",a:"Clifford Brown / Max Roach",y:1955},
+      {t:"At Basin Street",a:"Clifford Brown / Max Roach",y:1956},{t:"Clifford Brown with Strings",a:"Clifford Brown",y:1955},
+      {t:"Sonny Rollins Vol.1",a:"Sonny Rollins",y:1956},{t:"Workin' and Steamin'",a:"Miles Davis",y:1956},
+      {t:"Miles Davis Vol.1",a:"Miles Davis",y:1952},{t:"Bags' Groove",a:"Miles Davis",y:1954},
+      {t:"Cookin'",a:"Miles Davis",y:1956},{t:"Tadd Dameron Quartet",a:"Tadd Dameron",y:1956},
+      {t:"John Lewis",a:"John Lewis",y:1958},{t:"Oscar Peterson Trio + One",a:"Oscar Peterson",y:1964},
+      {t:"Night Train",a:"Oscar Peterson",y:1963}
+    ]}
+  };
+
+  let essCurrentGenre = 'overview';
+  let essSearchQ = '';
+
+  function essTab(genre) {
+    essCurrentGenre = genre;
+    Object.keys(ESS_GENRES).concat(['overview']).forEach(k => {
+      const btn = document.getElementById('esstab-' + k);
+      if (!btn) return;
+      btn.style.color = k === genre ? 'var(--accent)' : 'var(--muted)';
+      btn.style.borderBottomColor = k === genre ? 'var(--accent)' : 'transparent';
+      btn.style.fontWeight = k === genre ? '700' : '400';
+    });
+    essRender();
+  }
+
+  function essFilter() {
+    essSearchQ = (document.getElementById('essSearch').value || '').toLowerCase();
+    essRender();
+  }
+
+  function essFilterAlbums(list) {
+    if (!essSearchQ) return list;
+    return list.filter(a => a.t.toLowerCase().includes(essSearchQ) || a.a.toLowerCase().includes(essSearchQ));
+  }
+
+  function essBadge(inDeelder) {
+    if (inDeelder) return '<span style="font-size:9px;background:rgba(200,169,110,0.15);color:var(--accent);border:1px solid rgba(200,169,110,0.3);padding:2px 7px;border-radius:3px;letter-spacing:.08em">Deelder</span>';
+    return '';
+  }
+
+  function essAlbumList(albums) {
+    const f = essFilterAlbums(albums);
+    if (!f.length) return '<div style="color:var(--muted);font-size:13px;padding:16px 0;text-align:center">Geen resultaten</div>';
+    const normDeelder = new Set(DEELDER_LIST.map(d => d.artist.toLowerCase().replace(/[^a-z0-9]/g,'')));
+    return f.map((a, i) => {
+      const inDeelder = normDeelder.has(a.a.toLowerCase().replace(/[^a-z0-9]/g,'').substring(0,10)) ||
+        DEELDER_LIST.some(d => d.album.toLowerCase().includes(a.t.toLowerCase().substring(0,8)));
+      return `<div style="display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--surface2)">
+        <span style="font-size:11px;color:var(--muted);text-align:right">${i+1}</span>
+        <div style="min-width:0">
+          <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.t}</div>
+          <div style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.a}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          ${essBadge(inDeelder)}
+          <span style="font-size:11px;color:var(--muted)">${a.y}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function essRender() {
+    const c = document.getElementById('essContent');
+    if (!c) return;
+    if (essCurrentGenre === 'overview') {
+      const all = Object.values(ESS_GENRES).flatMap(g => g.albums);
+      let html = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px">
+        <div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:22px;font-weight:700">${all.length}</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Essentials</div>
+        </div>
+        <div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:var(--green)">${Object.keys(ESS_GENRES).length}</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Genres</div>
+        </div>
+        <div style="background:var(--surface);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:var(--accent)">${DEELDER_LIST.length}</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Deelder</div>
+        </div>
+      </div>`;
+      Object.entries(ESS_GENRES).forEach(([key, g]) => {
+        const f = essFilterAlbums(g.albums);
+        if (!f.length && essSearchQ) return;
+        html += `<div style="margin-bottom:6px;margin-top:16px">
+          <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">${g.label}</div>
+          <div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:8px">${g.desc}</div>
+        </div>`;
+        html += essAlbumList(g.albums.slice(0, 5));
+        html += `<button onclick="essTab('${key}')" style="background:none;border:none;color:var(--accent);font-size:12px;padding:6px 0;cursor:pointer">Alle ${g.albums.length} →</button>`;
+      });
+      c.innerHTML = html;
+    } else {
+      const g = ESS_GENRES[essCurrentGenre];
+      const html = `<div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:14px">${g.desc}</div>` + essAlbumList(g.albums);
+      c.innerHTML = html;
+    }
   }
 
   // === DEELDER LIST RENDERING ===
