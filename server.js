@@ -6,6 +6,7 @@ const fs = require('fs');
 
 const analyzeRoute = require('./routes/analyze');
 const discogsRoute = require('./routes/discogs');
+const excelRoute = require('./routes/excel');
 const authRoute = require('./routes/auth');
 
 const app = express();
@@ -54,10 +55,9 @@ app.post('/check-wantlist', discogsRoute.checkWantlist);
 app.post('/search-thumb', discogsRoute.searchThumb);
 app.post('/add-collection', discogsRoute.addToCollection);
 app.post('/add-wantlist', discogsRoute.addToWantlist);
-
-// Numbers/Excel: tijdelijk uitgeschakeld (werkt alleen lokaal via AppleScript)
-app.post('/check-numbers', (req, res) => res.json({ exists: false, offline: true }));
-app.post('/add-excel', (req, res) => res.json({ success: false, message: '📊 Numbers-integratie is offline in cloud-modus. Gebruik Discogs collectie.' }));
+app.post('/check-numbers', excelRoute.checkNumbers);
+app.post('/add-excel', excelRoute.addToNumbers);
+app.get('/download-collection', excelRoute.downloadCollection);
 
 // Opruimen uploads na 1 uur
 setInterval(() => {
